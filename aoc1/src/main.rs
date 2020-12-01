@@ -22,7 +22,15 @@ fn main() -> Result<(), Box<dyn Error>> {
         .filter_map(|w| w.parse().ok())
         .collect();
    
-    // Ugly brute force algorithm:
+    two_numbers(numbers);
+
+    Ok(())
+}
+
+
+// Part 1
+fn two_numbers(numbers: Vec<i32>) {
+    // Brute force algorithm:
     // Declare a mutable variable to be used together with each element in vector.
     let mut second_num: i32;
 
@@ -41,6 +49,4 @@ fn main() -> Result<(), Box<dyn Error>> {
             }
         }
     }
-    Ok(())
 }
-
