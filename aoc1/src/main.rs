@@ -6,11 +6,12 @@
 // To run: cargo run
 // 
 use std::io::Read;
+use std::error::Error;
 
-fn main(){
+fn main() -> Result<(), Box<dyn Error>> {
     // Standard method for opening a file and storing it as one string.
     // Lines separated by `\n` 
-    let mut file = std::fs::File::open("input/input.txt").unwrap();
+    let mut file = std::fs::File::open("input.txt").unwrap();
     let mut contents = String::new();
     file.read_to_string(&mut contents).unwrap();
 
@@ -40,4 +41,6 @@ fn main(){
             }
         }
     }
+    Ok(())
 }
+
