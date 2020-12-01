@@ -1,9 +1,11 @@
-// Advent of Code 2020: Day 1, Problem 1 
+// Advent of Code 2020: Day 1
 //
-// Description:
+// Part 1 Problem:
 // In a list of numbers find the two entries that sum to 2020 and then multiply those two numbers together.
 //
-// To run: cargo run
+// Part 2 Problem:
+// With the same list of numbers, find the three entries that sum to 2020 and output their
+// product.
 // 
 use std::io::Read;
 use std::error::Error;
@@ -22,14 +24,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         .filter_map(|w| w.parse().ok())
         .collect();
    
-    two_numbers(numbers);
-
+    two_numbers(&numbers);
+    three_numbers(&numbers);
     Ok(())
 }
 
 
 // Part 1
-fn two_numbers(numbers: Vec<i32>) {
+fn two_numbers(numbers: &Vec<i32>) {
     // Brute force algorithm:
     // Declare a mutable variable to be used together with each element in vector.
     let mut second_num: i32;
@@ -43,9 +45,37 @@ fn two_numbers(numbers: Vec<i32>) {
         for y in x+1..numbers.len() {
             // If second number found, print both numbers and their product.
             if numbers[y] == second_num {
-                println!("Found pair: {} + {} = 2020", numbers[x], numbers[y]);
-                println!("Product of pair: {}", numbers[x] * numbers[y]);
+                println!("Part 1: Two numbers");
+                println!("{} + {} = 2020", numbers[x], numbers[y]);
+                println!("Product: {}", numbers[x] * numbers[y]);
                 break;
+            }
+        }
+    }
+}
+
+// Part 2
+fn three_numbers(numbers: &Vec<i32>) {
+    // Same structure as two_numbers
+    // Even uglier!
+    let mut mid_sum: i32;
+
+    let mut third_num: i32;
+
+    for x in 0..numbers.len() {
+        mid_sum = 2020 - numbers[x];
+
+        for y in x+1..numbers.len() {
+            if mid_sum - numbers[y] > 0 {
+                third_num = mid_sum - numbers[y];
+                for z in y+1..numbers.len() {
+                    if numbers[z] == third_num {
+                        println!("Part 2: Three numbers");
+                        println!("Numbers: {}, {}, {}", numbers[x], numbers[y], numbers[z]);
+                        println!("Product: {}", numbers[x] * numbers[y] * numbers[z]);
+                        break;
+                    }
+                }
             }
         }
     }
