@@ -1,15 +1,16 @@
 // Advent of Code 2020: Day 1, Problem 1 
 //
+// Description:
 // In a list of numbers find the two entries that sum to 2020 and then multiply those two numbers together.
 //
-// To run: compile with `rustc Problem1.rs` and excute binary `./Problem1`
+// To run: cargo run
 // 
 use std::io::Read;
 
 fn main(){
     // Standard method for opening a file and storing it as one string.
     // Lines separated by `\n` 
-    let mut file = std::fs::File::open("input_P1.txt").unwrap();
+    let mut file = std::fs::File::open("input/input.txt").unwrap();
     let mut contents = String::new();
     file.read_to_string(&mut contents).unwrap();
 
