@@ -77,16 +77,14 @@ fn new_validate_password(pass: Password) -> bool {
 //Data wrangling
 fn parse_line(input: &String) -> Password {
     let parsed: Vec<&str> = input.split(['-', ':', ' '].as_ref()).collect();
-    println!("{:?}", parsed);
-    let pass = Password {
+    Password {
         lower: parsed[0].parse::<usize>().unwrap(),
         upper: parsed[1].parse::<usize>().unwrap(),
         letter: parsed[2].chars().collect::<Vec<char>>()[0],
         // .split() includes the whitespace at index 3, but I can't be 
         // bothered to figure out a better solution
         password: parsed[4].to_string()
-    };
-   pass 
+    }
 }
 
 
