@@ -65,8 +65,8 @@ fn new_validate_password(pass: &Password) -> bool {
     let letter = pass.letter;
     let chars: Vec<char> = pass.password.chars().collect();
 
-    if (chars[pos1-1] == letter && chars[pos2-1] != letter) ||
-        (chars[pos1-1] != letter && chars[pos2-1] == letter) {
+    if (chars[pos1] == letter && chars[pos2] != letter) ||
+        (chars[pos1] != letter && chars[pos2] == letter) {
         true
     } else {
         false
