@@ -6,27 +6,24 @@ use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let area = parse_lines(parse_file("input.txt"));
-    let starting_pos = (0, 0);
     let slopes = [(1, 1), (1, 3), (1, 5), (1, 7), (2, 1)];
-    let mut product: i64 = 1;
 
-    for slope in slopes.iter() {
-        let encounters = calculate_tree_encounters(&area, starting_pos, *slope);
-        println!("Number of trees encountered for slope: [Right {}, Down {}] => {}", 
-                 slope.1, slope.0, encounters);
-        product = product * encounters as i64;
-    }
+    let product = slopes
+        .iter()
+        .map(|&slope| calculate_tree_encounters(&area, slope))
+        .product::<usize>();
+
     println!("Final product of trees hit: {}", product);
     Ok(())
 }
 
-fn calculate_tree_encounters(area: &Vec<Vec<char>>, start: (i32, i32), slope: (i32, i32)) -> i32 {
+fn calculate_tree_encounters(area: &Vec<Vec<char>>, slope: (i32, i32)) -> usize {
     let height = (area.len() as i32) - 1;
     let width = (area[0].len() as i32) - 1;
-    let mut encounters = 0;
-    let mut pos = start;
+    let mut encounters: usize = 0;
+    let mut pos = (0, 0);
 
-    for _ in start.0..height {
+    for _ in 0..height {
         // Set position (y, x) according to slope, break if at bottom
         if pos.0 >= height {
             break;
@@ -45,11 +42,11 @@ fn calculate_tree_encounters(area: &Vec<Vec<char>>, start: (i32, i32), slope: (i
             encounters += 1;
         }
     }
+    println!("Number of trees for slope [Right {} Down {}] => {}", slope.1, slope.0, encounters);
     encounters
 }
 
 // Data wrangling
-// Convert 1D array of strings into 2D array of chars
 fn parse_lines(input: Vec<String>) -> Vec<Vec<char>> {
     let area = input
         .iter()
