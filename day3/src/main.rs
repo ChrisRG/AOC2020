@@ -11,50 +11,45 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut product: i64 = 1;
 
     for slope in slopes.iter() {
-        let hits = calculate_trees_hit(&area, starting_pos, *slope);
-        println!("Number of trees hit for slope: [Right {}, Down {}] => {}", 
-                 slope.1, slope.0, hits);
-        product = product * hits as i64;
+        let encounters = calculate_tree_encounters(&area, starting_pos, *slope);
+        println!("Number of trees encountered for slope: [Right {}, Down {}] => {}", 
+                 slope.1, slope.0, encounters);
+        product = product * encounters as i64;
     }
     println!("Final product of trees hit: {}", product);
     Ok(())
 }
 
-fn calculate_trajectory(height: i32, width: i32, start: (i32, i32), slope: (i32, i32)) -> Vec<(i32, i32)> {
-    let mut pos_list = Vec::new();
+fn calculate_tree_encounters(area: &Vec<Vec<char>>, start: (i32, i32), slope: (i32, i32)) -> i32 {
+    let height = (area.len() as i32) - 1;
+    let width = (area[0].len() as i32) - 1;
+    let mut encounters = 0;
     let mut pos = start;
+
     for _ in start.0..height {
+        // Set position (y, x) according to slope, break if at bottom
         if pos.0 >= height {
             break;
+        } else { 
+            pos.0 = pos.0 + slope.0;
         }
-        pos.0 = pos.0 + slope.0;
+        // If we hit the right edge, loop back to the left: 
+        //      (positionX + slopeX) - width - 1 [since it starts at 0]
         if pos.1 + slope.1 > width {
             pos.1 = ((pos.1 + slope.1) - width) - 1;
         } else {
             pos.1 = pos.1 + slope.1;
         }
-        pos_list.push(pos);
+        // Did we encounter a tree?
+        if area[pos.0 as usize][pos.1 as usize] == '#' {
+            encounters += 1;
+        }
     }
-    pos_list
-}
-
-fn calculate_trees_hit(area: &Vec<Vec<char>>, start: (i32, i32), slope: (i32, i32)) -> i32 {
-    let pos_list: Vec<(i32, i32)> = 
-        calculate_trajectory(
-            (area.len() as i32) - 1, 
-            (area[0].len() as i32) - 1,
-            start, slope);
-
-    let mut hits = 0;
-    for pos in pos_list {
-       if area[pos.0 as usize][pos.1 as usize] == '#' {
-            hits += 1;
-       }
-    }
-    hits
+    encounters
 }
 
 // Data wrangling
+// Convert 1D array of strings into 2D array of chars
 fn parse_lines(input: Vec<String>) -> Vec<Vec<char>> {
     let area = input
         .iter()
