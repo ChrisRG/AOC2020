@@ -57,12 +57,10 @@ fn is_valid(passport: &HashMap<&str, &str>) -> bool {
 fn valid_hgt(input: &str) -> bool { 
     let index: usize = input.len() - 2;
     let height = &input.split_at(index);
-    if height.1 == "cm" && (150..=193).contains(&height.0.parse().unwrap()) {
-        true
-    } else if height.1 == "in" && (59..=76).contains(&height.0.parse().unwrap()) {
-        true
-    } else {
-        false
+    match height.1 {
+        "cm" => (150..=193).contains(&height.0.parse().unwrap()),
+        "in" => (59..=76).contains(&height.0.parse().unwrap()),
+        _ => false
     }
 }
 
