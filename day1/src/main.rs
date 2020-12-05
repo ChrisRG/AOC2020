@@ -26,17 +26,22 @@ fn main() -> Result<(), Box<dyn Error>> {
         .collect();
    
     two_numbers(&numbers);
-    two_numbers_iter(&numbers, 2);
     three_numbers(&numbers);
+    two_combination(&numbers);
     Ok(())
 }
 
+// Subsequent refactoring in a more functional style
+fn two_combination(numbers: &Vec<i32>) { 
+    let result = numbers
+        .iter()
+        .combinations(2)
+        .find(|window| window[0] + window[1] == 2020)
+        .unwrap();
 
-fn two_numbers_iter(numbers: &Vec<i32>, size: usize) { 
-     for combos in numbers.into_iter().combinations(size).collect::<Vec<&i32>>() {
-            println!("{:?} ", combos);  
-     }
+    println!("Combination of two: {:?}", result);
 }
+
 
 
 
