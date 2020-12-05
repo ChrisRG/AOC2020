@@ -6,19 +6,16 @@ use std::error::Error;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let input = std::fs::read_to_string("input.txt").unwrap();
-    let passes = input.split("\n").collect::<Vec<&str>>();
+    let passes = input.split("\n").filter(|&pass| pass != "").collect::<Vec<&str>>();
     let mut boarding_passes: Vec<BoardingPass> = Vec::new();
 
     for pass in passes {
-        if pass != "" {
-            boarding_passes.push(BoardingPass::new(pass));
-        }
+        boarding_passes.push(BoardingPass::new(pass));
     }
 
+    // Part 1
     boarding_passes.sort_by_key(|pass| pass.get_seat());
     let highest_seat = boarding_passes.last().unwrap().get_seat();
-
-    // Part 1
     println!("Highest seat: {}", highest_seat);
 
     // Part 2
@@ -61,7 +58,7 @@ impl BoardingPass {
     }
 }
 
-fn missing_numbers(mut input: Vec<BoardingPass>) -> i32 {
+fn missing_numbers(input: Vec<BoardingPass>) -> i32 {
     let gap = input
         .windows(2)
         .find(|window| window[0].get_seat() + 1 != window[1].get_seat())
