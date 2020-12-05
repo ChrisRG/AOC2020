@@ -32,9 +32,12 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 
-fn two_numbers_iter(numbers: &Vec<i32>, size: usize) { 
-     for combos in numbers.into_iter().combinations(size).collect::<Vec<&i32>>() {
-            println!("{:?} ", combos);  
+fn two_numbers_iter(numbers: &Vec<i32>, size: usize) -> i32 {
+     for combos in numbers.into_iter().combinations(size) {
+         
+         if combos.iter().sum::<i32>() == 2020 {
+            combos.product()
+         }
      }
 }
 
