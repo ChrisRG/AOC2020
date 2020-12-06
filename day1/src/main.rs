@@ -21,28 +21,38 @@ fn main() -> Result<(), Box<dyn Error>> {
     // For a new vector of integers, split the contents string by newlines.
     // Iterate through and map each element with parse, converting to integers.
     // If parse succeeds, filter and pass on to be collected in the vector.
-    let numbers: Vec<i32> = contents.split("\n")
+    let mut numbers: Vec<i32> = contents.split("\n")
         .filter_map(|w| w.parse().ok())
         .collect();
    
+
     two_numbers(&numbers);
     three_numbers(&numbers);
-    two_combination(&numbers);
+    two_combination(numbers, 2);
     Ok(())
 }
 
 // Subsequent refactoring in a more functional style
-fn two_combination(numbers: &Vec<i32>) { 
+fn two_combination(numbers: Vec<i32>, size: usize) { 
     let result = numbers
-        .iter()
-        .combinations(2)
+        .windows(size)
         .find(|window| window[0] + window[1] == 2020)
         .unwrap();
 
-    println!("Combination of two: {:?}", result);
+    println!("Combination for {}: {:?}", size, result);
 }
 
-
+/* To try out:
+ *
+ *for combination in numbers.iter().copied().combinations(num) {
+            let sum: u32 = combination.iter().sum();
+            if sum == 2020 {
+                let product: u32 = combination.iter().product();
+                println!("{}", product);
+                break;
+            }
+        }
+ */
 
 
 // Part 1
