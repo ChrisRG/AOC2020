@@ -5,7 +5,6 @@
 
 use std::error::Error;
 use petgraph::graphmap::*;
-use petgraph::dot::Dot;
 use petgraph::visit::*;
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -17,15 +16,15 @@ fn main() -> Result<(), Box<dyn Error>> {
         graph_bag(&mut bag_graph, line)
     }
 
-    let start = "shiny gold"; 
-    let mut dfs = Bfs::new(&bag_graph, start);
+    let target_color = "shiny gold"; 
+    let mut dfs = Bfs::new(&bag_graph, target_color);
     let mut final_count = 0;
 
     while let Some(visited) = dfs.next(&bag_graph) {
         final_count += 1;
     }
 
-    println!("Final number: {}", final_count-1);
+    println!("Total number of bags which can contain {}: {}", target_color, final_count-1);
     Ok(())
 }
 
