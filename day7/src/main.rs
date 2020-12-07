@@ -57,7 +57,8 @@ fn total_containers(bag_graph: &DiGraphMap<&str, u32>) -> i32 {
     breadth_count-1
 }
 
-// Part 2 -- Cheated for this next part... 
+// Part 2 -- Cheated for this next part... based on an example I found:
+//  https://github.com/MarkDDR/advent_of_code_2020/blob/master/src/day7.rs
 // But was getting tired of trying to figure out the the petgraph API... 
 // NB: the build_graph() function sets up for part 1
 // only if the edges are built from target_color to main_color 
