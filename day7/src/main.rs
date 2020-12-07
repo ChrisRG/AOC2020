@@ -7,28 +7,26 @@ use std::error::Error;
 use petgraph::graphmap::*;
 use petgraph::visit::*;
 
+static TARGET: &str = "shiny gold";
+
 fn main() -> Result<(), Box<dyn Error>> {
     let input = std::fs::read_to_string("input.txt").unwrap();
 
     let mut bag_graph = DiGraphMap::<&str, u32>::new();
-
     for line in input.lines() {
-        graph_bag(&mut bag_graph, line)
+        build_graph(&mut bag_graph, line)
     }
 
-    let target_color = "shiny gold"; 
-    let mut dfs = Bfs::new(&bag_graph, target_color);
-    let mut final_count = 0;
+    println!("Total number of bags which can contain `{}`: {}", 
+            TARGET, total_containers(&bag_graph));
 
-    while let Some(visited) = dfs.next(&bag_graph) {
-        final_count += 1;
-    }
+    println!("Total number of contents of `{}`: {}",
+             TARGET, total_contents(&bag_graph));
 
-    println!("Total number of bags which can contain {}: {}", target_color, final_count-1);
     Ok(())
 }
 
-fn graph_bag<'a>(bag_graph: &mut DiGraphMap<&'a str, u32>,
+fn build_graph<'a>(bag_graph: &mut DiGraphMap<&'a str, u32>,
                  line: &'a str) {
     let (color, items) = line.split_once(" bags contain ").unwrap();
 
@@ -41,10 +39,51 @@ fn graph_bag<'a>(bag_graph: &mut DiGraphMap<&'a str, u32>,
 
             let weight = weight.parse::<u32>().unwrap();
 
-            bag_graph.add_edge(target_color, main_color, weight);
+            bag_graph.add_edge(main_color, target_color, weight);
 
         }
     }
 }
 
+// Part 1
+fn total_containers(bag_graph: &DiGraphMap<&str, u32>) -> i32 {
+    let mut bfs = Bfs::new(&bag_graph, TARGET);
+    let mut breadth_count = 0;
+
+    while let Some(_) = bfs.next(&bag_graph) {
+        breadth_count += 1;
+    }
+
+    breadth_count-1
+}
+
+// Part 2 -- Cheated for this next part... 
+// But was getting tired of trying to figure out the the petgraph API... 
+// NB: the build_graph() function sets up for part 1
+// only if the edges are built from target_color to main_color 
+// and for part 2 only if the edges are built from main_color to target
+// Need to refactor, probably not using a directional graph 
+fn total_contents(bag_graph: &DiGraphMap<&str, u32>) -> u32 {
+    let mut content_count = 0;
+
+    let mut nodes_to_visit: Vec<_> = bag_graph
+        .edges(TARGET)
+        .map(|e| (e.target(), *e.weight()))
+        .collect();
+
+    while !nodes_to_visit.is_empty() {
+        let mut next_nodes_to_visit = vec![];
+
+        for (node, mult) in nodes_to_visit {
+            content_count += mult;
+
+            next_nodes_to_visit.extend(bag_graph
+                .edges(node)
+                .map(|e| (e.target(), mult * *e.weight()))
+                );
+        }
+        nodes_to_visit = next_nodes_to_visit;
+    }   
+    content_count
+}
 
