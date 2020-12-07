@@ -4,74 +4,48 @@
 #![feature(str_split_once)]
 
 use std::error::Error;
+use petgraph::graphmap::*;
+use petgraph::dot::Dot;
+use petgraph::visit::*;
 
 fn main() -> Result<(), Box<dyn Error>> {
     let input = std::fs::read_to_string("input.txt").unwrap();
-    let bags = input.lines()
-        .map(|line| Bag::parse(line))
-        .collect::<Vec<_>>();
 
-    let target = "shiny gold";
-    let mut possible_bags: Vec<&Bag> = Vec::new();
-    let mut total_contained: u32 = 0;
-    
-    contains_color(&bags, target, &mut possible_bags); 
-    contains_number(&bags, target, &mut total_contained);
+    let mut bag_graph = DiGraphMap::<&str, u32>::new();
 
-    possible_bags.sort_by_key(|bag| bag.color);
-    possible_bags.dedup_by_key(|bag| bag.color);
+    for line in input.lines() {
+        graph_bag(&mut bag_graph, line)
+    }
 
-    println!("Number of possible bags for `{}`: {}", target, possible_bags.len());
+    let start = "shiny gold"; 
+    let mut dfs = Bfs::new(&bag_graph, start);
+    let mut final_count = 0;
 
+    while let Some(visited) = dfs.next(&bag_graph) {
+        final_count += 1;
+    }
+
+    println!("Final number: {}", final_count-1);
     Ok(())
 }
 
-fn contains_color<'a>(bags: &'a Vec<Bag<'a>>, 
-                      target: &str, 
-                      final_list: &mut Vec<&'a Bag<'a>>) {
-    for bag in bags
-        .iter()
-        .filter(|bag| bag.rules.iter().any(|rule| rule.color == target)) {
-            final_list.push(bag);
-            contains_color(&bags, bag.color, final_list);
+fn graph_bag<'a>(bag_graph: &mut DiGraphMap<&'a str, u32>,
+                 line: &'a str) {
+    let (color, items) = line.split_once(" bags contain ").unwrap();
+
+    let main_color = bag_graph.add_node(color);
+
+    if !items.starts_with("no") {
+        for rule in items.split(", ") {
+            let (weight, target_color) = rule.split_once(" ").unwrap();
+            let (target_color, _) = target_color.split_once(" bag").unwrap();
+
+            let weight = weight.parse::<u32>().unwrap();
+
+            bag_graph.add_edge(target_color, main_color, weight);
+
         }
-}
-
-fn contains_number<'a>(bags: &'a Vec<Bag<'a>>,
-                       target: &str,
-                       final_count: &mut u32) {
-    // TODO
-}
-
-#[derive(Debug)]
-struct Bag<'a> {
-    color: &'a str,
-    rules: Vec<BagRule<'a>>,
-}
-
-impl<'a> Bag<'a> {
-    fn parse(line: &'a str) -> Bag {
-        let (color, items) = line.split_once(" bags contain ").unwrap();
-        let mut rules = Vec::new();
-
-        if !items.starts_with("no") {
-            for rule in items.split(", ") {
-                let (number, color) = rule.split_once(" ").unwrap();
-                let (color, _) = color.split_once(" bag").unwrap();
-
-                let number = number.parse::<u32>().unwrap();
-
-                rules.push(BagRule { number, color });
-            }
-        }
-        
-        Bag { color, rules }
     }
 }
 
-#[derive(Debug)]
-struct BagRule<'a> {
-    number: u32,
-    color: &'a str,
-}
 
