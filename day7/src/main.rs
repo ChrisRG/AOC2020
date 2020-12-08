@@ -76,12 +76,12 @@ fn total_contents(bag_graph: &DiGraphMap<&str, u32>) -> u32 {
         let mut next_nodes_to_visit = vec![];
 
         for (node, mult) in nodes_to_visit {
-            content_count += mult;
-
             next_nodes_to_visit.extend(bag_graph
                 .edges(node)
                 .map(|e| (e.target(), mult * *e.weight()))
                 );
+
+            content_count += mult;
         }
         nodes_to_visit = next_nodes_to_visit;
     }   
