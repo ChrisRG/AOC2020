@@ -6,19 +6,23 @@ use std::error::Error;
 use itertools::Itertools;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let input = std::fs::read_to_string("input.txt").unwrap();
+    let numbers = parse_data("input.txt");
     let window: usize = 25;
 
+    println!("Invalid: {}", find_invalid(&numbers, window));
+
+    println!("Encryption weakness: {}", find_weakness(&numbers, window).unwrap());
+
+    Ok(())
+}
+
+fn parse_data(file_name: &str) -> Vec<i64> {
+    let input = std::fs::read_to_string(file_name).unwrap();
     let numbers: Vec<i64> = input
         .split_whitespace()
         .map(|num| num.parse::<i64>().unwrap())
         .collect();
-
-    for num in find_invalids(&numbers, window) {
-        println!("Invalid: {}", num);
-    }
-
-    Ok(())
+    numbers
 }
 
 fn parse_num(number: &i64, window: &[i64]) -> bool {
@@ -32,18 +36,45 @@ fn parse_num(number: &i64, window: &[i64]) -> bool {
 }
 
 // Part 1
-fn find_invalids(numbers: &Vec<i64>, window: usize) -> Vec<i64> {
-    let mut invalid_nums: Vec<i64> = Vec::new();
+fn find_invalid(numbers: &Vec<i64>, window: usize) -> i64 {
+    let mut invalid_num: i64 = 0;
 
     for (x, num) in numbers.iter().enumerate() {
         if x < window {
             continue;
         }
         if !parse_num(num, &numbers[x-window..=x-1]) {
-            invalid_nums.push(*num);
+            invalid_num = *num;
         }
     }
-    invalid_nums
+    invalid_num
+}
+
+// Part 2
+fn find_weakness(numbers: &Vec<i64>, window: usize) -> Option<i64> {
+    let weak_num = find_invalid(&numbers, window);
+
+    let mut num_series: Vec<i64> = Vec::new();
+
+    for (x, num) in numbers.iter().enumerate() {
+        num_series.push(*num);
+
+        for next_num in numbers[x+1..].iter() {
+            num_series.push(*next_num);
+            let sum = num_series.iter().sum::<i64>();
+
+            if sum == weak_num {
+                num_series.sort();
+                return Some(num_series.first().unwrap() 
+                            + num_series.last().unwrap());
+
+            } else if sum > weak_num {
+                num_series.clear();
+                break;
+            }
+        }
+    }
+    None
 }
 
 #[cfg(test)]
@@ -52,13 +83,13 @@ mod tests {
 
     #[test]
     fn test_part1() {
-        let input = std::fs::read_to_string("input_test.txt").unwrap();
+        let numbers = parse_data("input_test.txt");
+        assert_eq!(find_invalid(&numbers, 5), 127);
+    }
 
-        let numbers = input
-            .split_whitespace()
-            .map(|num| num.parse::<i64>().unwrap())
-            .collect::<Vec<_>>();
-
-        assert_eq!(find_invalids(&numbers, 5)[0], 127);
+    #[test]
+    fn test_part2() {
+        let numbers = parse_data("input_test.txt");
+        assert_eq!(find_weakness(&numbers, 5).unwrap(), 62);
     }
 }
