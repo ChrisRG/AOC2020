@@ -9,7 +9,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let numbers = parse_data("input.txt");
     let window: usize = 25;
 
-    println!("Invalid: {}", find_invalid(&numbers, window));
+    println!("Invalid: {}", find_invalid(&numbers, window).unwrap());
 
     println!("Encryption weakness: {}", find_weakness(&numbers, window).unwrap());
 
@@ -36,23 +36,21 @@ fn parse_num(number: &i64, window: &[i64]) -> bool {
 }
 
 // Part 1
-fn find_invalid(numbers: &Vec<i64>, window: usize) -> i64 {
-    let mut invalid_num: i64 = 0;
-
+fn find_invalid(numbers: &Vec<i64>, window: usize) -> Option<i64> {
     for (x, num) in numbers.iter().enumerate() {
         if x < window {
             continue;
         }
         if !parse_num(num, &numbers[x-window..=x-1]) {
-            invalid_num = *num;
+            return Some(*num);
         }
     }
-    invalid_num
+    None
 }
 
 // Part 2
 fn find_weakness(numbers: &Vec<i64>, window: usize) -> Option<i64> {
-    let weak_num = find_invalid(&numbers, window);
+    let weak_num = find_invalid(&numbers, window).unwrap();
 
     let mut num_series: Vec<i64> = Vec::new();
 
