@@ -36,7 +36,7 @@ fn parse_num(number: &i64, window: &[i64]) -> bool {
 }
 
 // Part 1
-fn find_invalid(numbers: &Vec<i64>, window: usize) -> Option<i64> {
+fn find_invalid(numbers: &[i64], window: usize) -> Option<i64> {
     for (x, num) in numbers.iter().enumerate() {
         if x < window {
             continue;
@@ -49,9 +49,8 @@ fn find_invalid(numbers: &Vec<i64>, window: usize) -> Option<i64> {
 }
 
 // Part 2
-fn find_weakness(numbers: &Vec<i64>, window: usize) -> Option<i64> {
+fn find_weakness(numbers: &[i64], window: usize) -> Option<i64> {
     let weak_num = find_invalid(&numbers, window).unwrap();
-
     let mut num_series: Vec<i64> = Vec::new();
 
     for (x, num) in numbers.iter().enumerate() {
