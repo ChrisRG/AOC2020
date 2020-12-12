@@ -3,102 +3,106 @@
 //
 
 use std::error::Error;
-use std::fmt;
 use std::time::Instant;
+
+static DIRS: [(i64, i64); 8] = [(-1,-1),(-1,0),(-1,1),(0,-1),(0,1),(1,-1),(1,0),(1,1)];
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut field = parse_data("input.txt");
 
     let now = Instant::now();
 
-    while field.deltas > 0 {
-        field.update();
-    }
-    println!("Final count: {} seats occupied", &field.count_occupied());
-    println!("Time: {:?}ms", now.elapsed().as_millis());                           
+    println!("Final count with adjacent seats: {} occupied", &field.update(false));
+
+    // Since I originally made this with a struct, we need to reset the data
+    // Not very efficient, but now can't be bothered to change it
+    field = parse_data("input.txt");
+    println!("Final count with line of sight seats: {} occupied", &field.update(true));
+    println!("Time: {:?}ms", now.elapsed().as_millis());           
     
     Ok(())
 }
 
 struct Field {
-    height: i32,
-    width: i32,
-    area: Vec<char>,
-    deltas: i32,
+    height: usize,
+    width: usize,
+    area: Vec<Vec<char>>,
 }
 
 impl Field {
-    fn get_index(&self, row: i32, col: i32) -> usize {
-        (row * self.width + col) as usize 
-    }
-
-    fn neighbor_count(&self, row: i32, col: i32) -> u8 {
-        let mut count = 0;
-
-        for window_row in row-1..=row+1 {
-            for window_col in col-1..=col+1 {
-                if window_row < 0 || window_row >= self.height {
-                    continue;
-                } else if window_col < 0 || window_col >= self.width {
-                    continue;
-                } else if window_row == row && window_col == col {
-                    continue;
-                } else {
-                    let index = self.get_index(window_row, window_col);
-                    if self.area[index] == '#' {
-                        count += 1;
+    fn update(&mut self, in_view: bool) -> usize {
+        let mut swap = Vec::new();
+        
+        loop { 
+            swap.clear();
+            for y in 0..self.height {
+                for x in 0..self.width {
+                    if !in_view {
+                        if self.area[y][x] != '.' && self.to_swap(y, x) {
+                            swap.push((y, x));
+                        }
+                    } else {
+                        if self.area[y][x] != '.' && self.to_swap_inview(y, x) {
+                            swap.push((y, x));
+                        }
                     }
                 }
-
             }
+
+            for &(y, x) in &swap {
+                self.area[y][x] = if self.area[y][x] == 'L' { '#' } else { 'L' };
+            }
+
+            if swap.is_empty() { break; }
         }
-        count
+        self.area
+            .iter()
+            .flat_map(|row| row.iter()).filter(|&&c| c == '#')
+            .count()
     }
 
-    fn update(&mut self) {
-        let mut next_area = self.area.clone();
-        let mut changes = 0;
-
-        for row in 0..self.height {
-            for col in 0..self.width {
-                let index = self.get_index(row, col);
-                let place = self.area[index];
-                let neighbor_count = self.neighbor_count(row, col);
-
-                let next_place: char;
-                match (place, neighbor_count) {
-                    ('L', 0) => { next_place = '#'; changes += 1 },
-                    ('#', x) if x >= 4 => { next_place = 'L'; changes += 1 },
-                    (otherwise, _) => next_place = otherwise
-                };
-
-                next_area[index] = next_place;
-            }
+// Part 1
+// Refactored the functionality learn how to implement a more elegant and "rusty" solution found on r/rust
+// Here:  https://github.com/AxlLind/AdventOfCode2020/blob/master/src/bin/11.rs
+    fn to_swap(&self, row: usize, col: usize) -> bool {
+        let mut neighbors = DIRS.iter()
+            .map(|(dy, dx)| (row as i64 + dy, col as i64 + dx))
+            .filter_map(|(y,x)| self.area.get(y as usize).and_then(|col| col.get(x as usize)));
+        
+        match self.area[row][col] {
+            'L' => neighbors.all(|&c| c != '#'),
+            '#' => neighbors.filter(|&&c| c == '#').count() >= 4,
+            _ => unreachable!()
         }
-        self.area = next_area;
-        self.deltas = changes;
     }
 
-    fn count_occupied(&self) -> u32 {
-        let mut count = 0;
-        for cell in self.area.iter() {
-            match cell { 
-                '#' => count += 1,
-                _ => continue,
-            }
+// Part 2
+// This part is almost entirely based on the repo mentioned above
+    fn to_swap_inview(&self, y: usize, x: usize) -> bool {
+        let mut neighbors = DIRS.iter()
+            .filter_map(|&dir| self.find_neighbors(dir, (y, x)));
+
+        match self.area[y][x] {
+            'L' => neighbors.all(|c| c != '#'),
+            '#' => neighbors.filter(|&c| c == '#').count() >= 5,
+            _ => unreachable!()
         }
-        count
     }
-}
-impl fmt::Display for Field {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for line in self.area.as_slice().chunks(self.width as usize) {
-            for &place in line {
-                write!(f, "{}", place)?;
+
+    fn find_neighbors(&self, (dy, dx): (i64, i64), (y, x): (usize, usize)) -> Option<char> {
+        let (mut y, mut x) = (y as i64, x as i64);
+
+        loop {
+            y += dy;
+            x += dx;
+            
+            match self.area.get(y as usize).and_then(|col| col.get(x as usize)) {
+                Some('.') => {},
+                Some(&c) => return Some(c),
+                None => break,
             }
-            write!(f, "\n")?;
         }
-        Ok(())
+        None
     }
 }
 
@@ -113,14 +117,12 @@ fn parse_data(filename: &str) -> Field {
     let area = field
         .iter()
         .map(|row| row.chars().collect::<Vec<char>>())
-        .flatten()
-        .collect::<Vec<_>>();
+        .collect::<Vec<Vec<char>>>();
 
     Field {
-        height: field.len() as i32,
-        width: field[0].len() as i32,
+        height: field.len(),
+        width: field[0].len(),
         area,
-        deltas: 1,
     }
 }
 
@@ -132,10 +134,13 @@ mod tests {
     fn test_part1() {
         let mut field = parse_data("input_test.txt");
 
-        while field.deltas > 0 {
-            field.update();
-        }
+        assert_eq!(field.update(false), 37);
+    }
 
-        assert_eq!(field.count_occupied(), 37);
+    #[test]
+    fn test_part2() {
+        let mut field = parse_data("input_test.txt");
+
+        assert_eq!(field.update(true), 26);
     }
 }
