@@ -3,47 +3,93 @@
 //
 
 use std::error::Error;
+use std::time::Instant;
 
-fn main() -> Result<(), Box<dyn Error>>{
-   let directions = parse_data("input.txt"); 
+fn main() -> Result<(), Box<dyn Error>> {
+    let now = Instant::now();
+    let directions = parse_data("input.txt"); 
 
-   let final_pos = move_boat(&mut (0, 0, 90), directions);
+    let boat_pos = move_boat(&directions);
 
-   println!("Manhattan distance: {}", calc_manhattan(final_pos));
+    println!("Manhattan distance for moving boat: {}", calc_manhattan(boat_pos));
 
-   Ok(())
+    let boat_way_pos = move_waypoint(&directions);
+
+    println!("Manhattan distance for moving waypoint: {}", calc_manhattan(boat_way_pos));
+
+    println!("Time: {:?} ms", now.elapsed().as_millis());
+
+    Ok(())
 }
 
-fn calc_manhattan(coord: (i32, i32, i32)) -> i32 {
+fn calc_manhattan(coord: (i32, i32)) -> i32 {
     coord.0.abs() + coord.1.abs()
 }
 
-fn move_boat((x, y, r): &mut (i32, i32, i32), directions: Vec<(char, i32)>) -> (i32, i32, i32) {
+// Part 1
+fn move_boat(directions: &Vec<(char, i32)>) -> (i32, i32) {
+    let (mut x, mut y, mut r) = (0, 0, 90);   
 
     for (dir, val) in directions {
-        println!("X: {}, Y: {}, Rot: {}", x, y, r);
-        println!("Dir: {}, val: {}", dir, val);
         match dir {
-           'N' => *y += val,
-           'S' => *y -= val,
-           'E' => *x += val,
-           'W' => *x -= val,
-           'L' => *r -= val,
-           'R' => *r += val,
+           'N' => y += val,
+           'S' => y -= val,
+           'E' => x += val,
+           'W' => x -= val,
+           'L' => r -= val,
+           'R' => r += val,
            'F' => match r.rem_euclid(360) {
-               0 => *y += val,
-               90 => *x += val,
-               180 => *y -= val,
-               270 => *x -= val,
+               0 => y += val,
+               90 => x += val,
+               180 => y -= val,
+               270 => x -= val,
                _ => unreachable!()
            }
            _ => continue,
         }
 
     }
-    println!("Final => X: {}, Y: {}, Rot: {}", x, y, r);
-    (*x, *y, *r)
+    (x, y)
+}
 
+// Part 2
+fn rotate(x: i32, y: i32, deg: i32) -> (i32, i32) {
+    match deg {
+        90 => (-y, x),
+        180 => (-x, -y),
+        270 => (y, -x),
+        _ => unreachable!(),
+    }
+}
+
+fn move_waypoint(directions: &Vec<(char, i32)>) -> (i32, i32) {
+    let (mut x, mut y) = (10, 1);
+    let mut ship_pos = (0, 0);
+
+    for (dir, val) in directions {
+        match dir {
+           'N' => y += val,
+           'S' => y -= val,
+           'E' => x += val,
+           'W' => x -= val,
+           'L' => {
+               let (x2, y2) = rotate(x, y, *val);
+               x = x2;
+               y = y2;
+           }
+           'R' => {
+               let (x2, y2) = rotate(x, y, 360 - *val);
+               x = x2;
+               y = y2;
+           }
+           'F' => {
+               ship_pos.0 += x * val;
+               ship_pos.1 += y * val; 
+           },
+               _ => unreachable!()
+           }
+        }
+    (ship_pos.0, ship_pos.1)
 }
 
 // Data wrangling
@@ -70,8 +116,17 @@ mod tests {
     fn test_part1() {
        let directions = parse_data("input_test.txt"); 
 
-       let final_pos = move_boat(&mut (0, 0, 90), directions);
+       let final_pos = move_boat(&directions);
 
        assert_eq!(calc_manhattan(final_pos), 25);
+    }
+
+    #[test]
+    fn test_part2() {
+        let directions = parse_data("input_test.txt");
+
+        let final_pos = move_waypoint(&directions);
+
+        assert_eq!(calc_manhattan(final_pos), 286);
     }
 }
