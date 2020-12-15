@@ -24,11 +24,9 @@ fn number_spoken(numbers: &[usize], limit: usize) -> usize {
             .enumerate()
             .filter(|&(_, v)| v == previous)
             .last();
-
         
         let current = last
             .map(|(index, _)| history.len() - (index+1)).unwrap_or(0);
-
 
         history.push(current);
 
