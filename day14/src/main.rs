@@ -3,31 +3,18 @@
 //
 #![feature(str_split_once)]
 
-use std::error::Error;
 use std::time::Instant;
 use std::collections::HashMap;
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() {
     let now = Instant::now();
     let addrs = parse_data("input_test.txt");
     let mem: HashMap<i64, i64> = HashMap::new();
 
-    println!("0b8");
-    for elem in addrs{
-        if !elem.starts_with("X") {
-            println!("{} -> {:b}", elem, elem.parse::<i64>().unwrap());
-        }
-    }
-   // let word_size = 36 bits
-   //   most significant, 2^35 on left, least significant, 2^0 on right
-    // mem[8] = 11 => address 8, value 11
-    // Apply bitmask before writing to memory
-    // 0 or 1 overwritten, X leaves unchangeds
-    // u64 = 0x ...Did 
-    Ok(())
 }
 
 fn to_bin(decimal: &str)  {
+    // TODO
 }
 fn parse_data(filename: &str) -> Vec<String> {
     let input = std::fs::read_to_string(filename).unwrap();
