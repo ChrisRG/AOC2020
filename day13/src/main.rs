@@ -35,12 +35,11 @@ fn calculate_next(time: i64, buses: Vec<i64>) -> (i64, i64) {
 fn parse_data(filename: &str) -> Vec<i64> {
     let input = std::fs::read_to_string(filename).unwrap();
 
-    let mut buses: Vec<i64> = input
+    let buses: Vec<i64> = input
         .split([',', '\n', ' '].as_ref())
         .filter(|&c| c != "x" && c != "")
         .map(|c| c.parse::<i64>().unwrap())
         .collect::<Vec<i64>>();
-    buses.sort();
     buses
 }
 
