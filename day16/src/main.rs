@@ -21,6 +21,7 @@ struct Rule {
     range2: (u32, u32),
 }
 
+// Part 1
 fn invalid_fields(tickets: &Vec<Vec<u32>>, rules: &[Rule]) -> u32 {
     let mut invalid_fields: Vec<u32> = Vec::new();
     for tick in tickets {
