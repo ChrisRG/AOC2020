@@ -47,8 +47,6 @@ fn apply_mask(mask: &str, val_str: &str) -> u64 {
     let new_bin = bits.into_iter()
         .collect::<String>();
 
-    println!("New binary: {:?}", new_bin);
-
     u64::from_str_radix(&new_bin, 2).unwrap()
 }
 
