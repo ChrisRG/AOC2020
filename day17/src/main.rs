@@ -16,6 +16,7 @@ fn main() {
     println!("Active cells in 3 dimensions: {}", grid.actives.len());
     println!("Time: {}ms", now.elapsed().as_millis());
     
+    let now = Instant::now();
     let mut grid: Grid = Grid::new("input.txt");
     grid.hyper_cycle(5);
     println!("Active cells in 4 dimensions: {}", grid.actives.len());
@@ -50,6 +51,7 @@ impl Grid {
             self.actives = self.new_actives.clone();
         }
     }
+
     // Part 2 - 4 dimensions
     fn hyper_cycle(&mut self, total_rounds: i16) {
         for round in 0..=total_rounds {
@@ -74,26 +76,20 @@ impl Grid {
         }
     }
 
-    fn active_neighbors(&self, point: &(i16,i16,i16,i16)) -> i16 {
-        let mut count: i16 = 0;
-        let neighbors = iproduct!(&DIRS, &DIRS, &DIRS, &DIRS)
+    fn active_neighbors(&self, point: &(i16,i16,i16,i16)) -> usize {
+        iproduct!(&DIRS, &DIRS, &DIRS, &DIRS)
           .map(|(dx, dy, dz, dw)| (dx+point.0, dy+point.1, dz+point.2, dw+point.3))
           .filter(|p| p != point)
-          .collect::<Vec<_>>();
-        for neighbor in neighbors {
-            if self.actives.contains(&neighbor) {
-                count += 1;
-            }
-        }
-        count
+          .filter(|point| self.actives.contains(point))
+          .collect::<Vec<_>>()
+          .len()
     }
 
     fn new(filename: &str) -> Grid { 
         let mut actives: HashSet<(i16, i16, i16, i16)> = HashSet::new();
         let input = std::fs::read_to_string(filename).unwrap();
 
-        let field = input.split_whitespace()
-            .collect::<Vec<&str>>();
+        let field = input.split_whitespace().collect::<Vec<&str>>();
 
         for (i, row) in field.iter().enumerate() {
             for (j, col) in row.chars().enumerate() {
