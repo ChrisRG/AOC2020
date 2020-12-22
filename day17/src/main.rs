@@ -33,8 +33,8 @@ impl Grid {
     fn cycle(&mut self, total_rounds: i16) {
         for round in 0..=total_rounds {
             self.new_actives.clear();
-            for x in -10-round..10+round {
-                for y in -10-round..10+round {
+            for x in -9-round..9+round {
+                for y in -9-round..9+round {
                     for z in -2-round..2+round {
                         let act_neighbors = self.active_neighbors(&(x,y,z,0));
                         if self.actives.contains(&(x,y,z,0)) && 
@@ -56,8 +56,8 @@ impl Grid {
     fn hyper_cycle(&mut self, total_rounds: i16) {
         for round in 0..=total_rounds {
             self.new_actives.clear();
-            for x in -10-round..10+round {
-                for y in -10-round..10+round {
+            for x in -9-round..9+round {
+                for y in -9-round..9+round {
                     for z in -2-round..2+round {
                         for w in -2-round..2+round {
                             let act_neighbors = self.active_neighbors(&(x,y,z,w));
