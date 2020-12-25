@@ -76,6 +76,7 @@ fn evaluate(num1: Node, num2: Node, op: Node) -> Node {
     }
 }
 
+// Data wrangling
 fn to_node(ch: &char) -> Node {
     if ch.is_digit(10) {
         Val(ch.to_digit(10).unwrap() as i64)
@@ -83,6 +84,7 @@ fn to_node(ch: &char) -> Node {
         Op(*ch)
     }
 }
+
 fn parse_data(filename: &str) -> Vec<Vec<Node>> {
     let input = std::fs::read_to_string(filename).unwrap();
 
@@ -110,9 +112,9 @@ mod tests {
     
     #[test]
     fn test_part1() {
-        let mut data = parse_data("input_test.txt");
+        let data = parse_data("input_test.txt");
 
-        assert_eq!(part1(&mut data), 26_335);
+        assert_eq!(part1(&data), 26_335);
     }
 }
 
