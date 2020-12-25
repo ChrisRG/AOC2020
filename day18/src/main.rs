@@ -2,16 +2,19 @@
 // Advent of Code 2020: Day 18
 //
 use crate::Node::{Val, Op};
+use std::time::Instant;
 
 fn main() {
-    let data = parse_data("input_test.txt");
+    let now = Instant::now();
+    let data = parse_data("input.txt");
 
     let part1_sum = part1(&data);
 
-    println!("{:?}", part1_sum);
+    println!("Part 1, final sum: {}", part1_sum);
+    println!("Time: {}ms", now.elapsed().as_millis());
 }
 
-#[derive(Eq, PartialEq, Debug, Clone)]
+#[derive(Eq, PartialEq, Debug, Clone, Copy)]
 enum Node {
     Val(i64),
     Op(char),
@@ -19,22 +22,26 @@ enum Node {
 
 // Part 1
 fn part1(expressions: &[Vec<Node>]) -> i64 {
-    expressions
-        .iter()
-        .map(|line| parse(line))
-        .sum::<i64>()
+    let mut total: i64 = 0;
+    for exp in expressions {
+        let result = parse(exp);
+        match result {
+            Val(v) => total += v,
+            _ => unreachable!(),
+        };
+    }
+    total
 }
 
-// stack: 5+(8*3
-// 
-fn parse(expression: &[Node]) -> i64 {
+fn parse(expression: &[Node]) -> Node {
     let mut stack: Vec<Node> = Vec::new();
     let mut block: Vec<Node> = Vec::new();
     
-    for char in expression.into_iter() {
+    for char in expression {
         if *char != Op(')') {
             stack.push(*char);
         } else if *char == Op(')') {
+            block.clear();
             while stack[stack.len() - 1] != Op('(') {
                 block.push(stack.pop().unwrap());
             }
@@ -44,34 +51,27 @@ fn parse(expression: &[Node]) -> i64 {
 
         }
     }
-    // TODO:
-    // Add characters to stack until )
-    // Reverse add (stack.pop()) to ordered list until (
-    // Evaluate ordered list
-    // While length > 1; pop left, pop operand, pop right, evaluate, append
-    // expression should be mutable
-    1
+    stack.reverse();
+    simplify(&stack)
 }
 
 fn simplify(input: &[Node]) -> Node {
     let mut expression: Vec<Node> = input.to_vec();
-    let mut total = Node::Val(0);
 
-    while expression.len() > 0 {
+    while expression.len() > 1 {
         let left = expression.pop().unwrap();
         let op = expression.pop().unwrap();
         let right = expression.pop().unwrap();
-        total = evaluate(left, right, op);
-        expression.push(total);
+        let result = evaluate(left, right, op);
+        expression.push(result);
     }
-    total
+    expression[0]
 }
 
-fn evaluate(left: Node, right: Node, op: Node) -> Node {
-    // TODO
-    match op {
-        Op('+') => left + right,
-        Op('*') => left * right,
+fn evaluate(num1: Node, num2: Node, op: Node) -> Node {
+    match (num1, num2, op) {
+        (Val(left), Val(right), Op('+')) => Node::Val(left + right),
+        (Val(left), Val(right), Op('*')) => Node::Val(left * right),
         _ => unreachable!(),
     }
 }
@@ -104,19 +104,8 @@ mod tests {
 
     #[test]
     fn test_eval() {
-        assert_eq!(8, evaluate(5, 3, '+'));
-        assert_eq!(25, evaluate(5, 5, '*'));
-    }
-
-    #[test]
-    fn test_simplify() {
-        let data = parse_data("input_test.txt");
-        let mut iter = data.iter();
-
-        assert_eq!(26, simplify(iter.next().unwrap()));
-        assert_eq!(437, simplify(iter.next().unwrap()));
-        assert_eq!(12240, simplify(iter.next().unwrap()));
-        assert_eq!(13632, simplify(iter.next().unwrap()));
+        assert_eq!(Val(8), evaluate(Val(5), Val(3), Op('+')));
+        assert_eq!(Val(25), evaluate(Val(5), Val(5), Op('*')));
     }
     
     #[test]
