@@ -9,7 +9,7 @@ use std::collections::HashMap;
 
 fn main() {
     let now = Instant::now();
-    let options = rule_options(parse_rules("test_rules.txt"), "0".to_string());
+    let options = rule_options(parse_rules("test_rules.txt"), 0);
     let messages = parse_messages("test_messages.txt");
     let num_messages = check_matches(options, messages);
 
@@ -26,7 +26,7 @@ fn check_matches(options: Vec<String>, messages: Vec<String>) -> u32 {
     num_matches
 }
 
-fn rule_options(rules: HashMap<String, Vec<char>>, rule_num: String) -> Vec<String> {
+fn rule_options(rules: HashMap<i32, Vec<Vec<String>>>, rule_num: i32) -> Vec<String> {
     let mut options: Vec<String> = Vec::new();
     // TODO
     // Check each "node" in the given rule
@@ -36,19 +36,21 @@ fn rule_options(rules: HashMap<String, Vec<char>>, rule_num: String) -> Vec<Stri
 }
 
 // Data Wrangling
-fn parse_rules(filename: &str) -> HashMap<String, Vec<char>> {
+fn parse_rules(filename: &str) -> HashMap<i32, Vec<Vec<String>>> {
     let input = std::fs::read_to_string(filename).unwrap();
-    let mut rule_map: HashMap<String, Vec<char>> = HashMap::new();
+    let mut rule_map: HashMap<i32, Vec<Vec<String>>> = HashMap::new();
     
     for line in input.lines() {
         let splitted = line.split_once(": ").unwrap();
-        let rule_name = splitted.0.to_string();
-        let mut rules: Vec<char> = Vec::new();
+        let rule_name = splitted.0.parse::<i32>().unwrap();
+        let mut rules: Vec<Vec<String>> = Vec::new();
 
-        for char in splitted.1.chars() {
-            if char != ' ' && char != '\"' {
-                rules.push(char);
-            }
+        for item in splitted.1.split(" | ") {
+            rules.push(item
+                       .split([' ', '"'].as_ref())
+                       .map(|item| item.to_string())
+                       .filter(|item| item != "")
+                       .collect::<Vec<String>>());
         }
         rule_map.insert(rule_name, rules);
     }
@@ -95,9 +97,8 @@ mod tests {
         // TODO
     }
 
-    #[test]
     fn test_part1() {
-        let options = rule_options(parse_rules("test_rules.txt"), "0".to_string()); 
+        let options = rule_options(parse_rules("test_rules.txt"), 0);
         let messages = parse_messages("test_messages.txt");
         let num_messages = check_matches(options, messages);
 
